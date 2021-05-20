@@ -1,13 +1,19 @@
-
+var bombWeight = 0.05;
 
 function setGrid(xn, yn){
  
     tGrid = [];
 
     for (i = 0; xn > i; i++){
+
+        yGrid = [];
+        
         for (j = 0; yn > j; j++){
-            tGrid.push(new land(i, j));
+ 
+            yGrid.push(new land(i, j));
         }
+        tGrid.push(yGrid);
+
     }
 
 
@@ -21,8 +27,8 @@ function update(){
 
 }
 
-function generateBomb(){
-    if (Math.random > 0.5){
+function generateBomb(bombWeight){
+    if (Math.random > bombWeight){
         return true
     }
     return false
@@ -39,6 +45,12 @@ class land {
         this.number = 0;
         this.bomb = generateBomb();
     }
+
+    getNeighbours(){
+
+    }
+
+
     
     /*get number(){
 
