@@ -1,9 +1,9 @@
-table{
+table {
     table-layout: fixed;
     max-width: 100px;
 }
 
-td{
+td {
 
     border: 5px solid black;
     max-width: 10px;
@@ -11,6 +11,6 @@ td{
     overflow: hidden;
 }
 
-p{
+p {
     font-size: 200;
 }
