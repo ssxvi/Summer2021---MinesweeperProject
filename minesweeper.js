@@ -1,6 +1,6 @@
 var bombWeight = 0.15;
-var pGridx = 8;
-var pGridy = 8;
+var pGridx = 10;
+var pGridy = 10;
 var playGrid = [];
 
 //class for squares
@@ -34,8 +34,7 @@ class Land {
 
   //gets number based on neighbour array
   getNumber() {
-
-
+    
     if (this.flagged == true) {
       this.number = -2;
     } else if (this.bomb == true) {
@@ -96,6 +95,8 @@ class Land {
           array.push(this.neighbours[i]);
         }
         break;
+
+
       }
 
     }
@@ -142,10 +143,14 @@ class Land {
 
   }
 
+  reveal(){
+    if (this.bomb == true){
+      this.number = -8;
+    }
+  }
+
+
 }
-
-
-
 
 
 
@@ -175,6 +180,9 @@ function setGrid(xn, yn) {
 }
 
 
+function importGrid(xn, yn, ){
+
+}
 
 
 
@@ -251,12 +259,12 @@ function updateAll(grid) {
 //sets up board so first guess opens
 function firstGuessSetup(x, y) {
 
-
   do {
     playGrid = setGrid(pGridx, pGridy);
     updateAll(playGrid);
     playGrid[x][y].getNumber();
-    console.log(playGrid[x][y].number);
+
+
   } while (playGrid[x][y].number !== 0)
 
   playGrid[x][y].guess();
@@ -282,26 +290,30 @@ function budgetTrueVisualizer(grid) {
     for (let j = 0; j < (pGridy); j++) {
 
       grid[i][j].getNumber();
+      grid[i][j].reveal();
 
       switch (grid[i][j].number) {
         case -1:
           line = line + '  -';
           break;
         case -2:
-          line = line + '  !';
+          line = line + '  🚩';
           break;
         case -8:
-          line = line + '  *';
+          line = line + '  💣';
           break;
         default:
           line = line + '  ' + grid[i][j].number;
           break;
       }
 
-
     }
+
     console.log(line);
+
   }
+
+  console.log();
 
 }
 
@@ -325,28 +337,29 @@ function budgetVisualizer(grid) {
             line = line + '  -';
             break;
           case -2:
-            line = line + '  !';
+            line = line + '  🚩';
             break;
           case -8:
-            line = line + '  *';
+            line = line + '  💣';
             break;
           default:
             line = line + '  ' + grid[i][j].number;
-
         }
+
       } else {
+
         line = line + '  -';
+
       }
     }
+
     console.log(line);
+
   }
 
+  console.log();
+
 }
-
-
-
-
-
 
 
 //solvers
@@ -355,15 +368,23 @@ function budgetVisualizer(grid) {
 //beeg solve
 function solve(grid) {
 
-  let set = getOpenSet(grid);
-  if (true) { }
+  scrape(grid);
 
 
 }
 
 //finds if program needs harder solve
 function isDeadlock(grid) {
+  if (scrape(grid) == false){
+    if (shoopSolve == false){
+      
+    } else {
+      return "s";
+    }
+  }
 
+
+  //if ()
 }
 
 //soft solve
@@ -377,20 +398,20 @@ function scrape(grid) {
     let wSqr = set[i];
 
     //print test value
-   // console.log("Test: x-" + wSqr.y + " y-" + wSqr.x);
+    //console.log("Test: x-" + wSqr.y + " y-" + wSqr.x);
     //console.log("value - " +  wSqr.number + " adj empty - " + //wSqr.getAdjProperty('e').length + " adj flagged - " + wSqr.getAdjProperty('f').length );
 
 
 
-  //flag if
-   if (wSqr.number == (wSqr.getAdjProperty('e').length + wSqr.getAdjProperty('f').length)){
+    //flag if
+    if (wSqr.number == (wSqr.getAdjProperty('e').length + wSqr.getAdjProperty('f').length)){
      
-     for (let l of wSqr.getAdjProperty('e')){
-      l.flag();
-      scraped = true;
+      for (let l of wSqr.getAdjProperty('e')){
+        l.flag();
+        scraped = true;
       
-     // console.log("flagged: x-" + l.y + " y-" + l.x);
-     }
+        // console.log("flagged: x-" + l.y + " y-" + l.x);
+      }
 
   //guess if
    } else if ((wSqr.number - wSqr.getAdjProperty('f').length) == 0){
@@ -398,18 +419,14 @@ function scrape(grid) {
      for (let l of wSqr.getAdjProperty('e')){
        l.guess();
        scraped = true;
-
-   //    console.log("guessed: x-" + l.y + " y-" + l.x);
-     }
-     
+        //console.log("guessed: x-" + l.y + " y-" + l.x);
+     }   
    }
 
     //format + iterate
-   // console.log();
+    // console.log();
     i++;
     set = getOpenSet(grid);
-
-
   }
 
   if (scraped == true){
@@ -452,30 +469,121 @@ function getOpenSet(grid) {
 
         }
       }
+    }
+  }
+  
+  return openSet;
+  
+}
 
+
+
+//superpositions smaller set and tries to solve
+function superPos(bLand, sLand){
+  let wArr = [];
+
+  //if small neighbours all in big neighbours
+  if (sLand.getAdjProperty('e').every(n => bLand.getAdjProperty('e').includes(n))){
+
+    //set work array to be big neighbours minus small neighbours
+    wArr = bLand.getAdjProperty('e').filter(l => !sLand.getAdjProperty('e').includes(l));
+
+    if (wArr.length == (bLand.number  - bLand.getAdjProperty('f').length) - (sLand.number - sLand.getAdjProperty('f').length)){
+      wArr.forEach(x => x.flag);
+    } 
+    /*else if (wArr.length == (bLand.number  - bLand.getAdjProperty('f').length) - (sLand.number - sLand.getAdjProperty('f').length)){
+      wArr.forEach(x => x.flag);
+    }*/
+  }
+}
+
+//checks if solved
+function solved(grid){
+
+
+  for (let i = 0; i < (pGridx); i++) {
+    for (let j = 0; j < (pGridy); j++) {
+
+      if (grid[i][j].bomb == true){
+        if(grid[i][j].flagged == false){
+          return false;
+        }
+      }
 
     }
   }
-  return openSet;
+
+    return true;
+
 }
 
-function getWorkingSet() { }
+//input own playGrid
+
+function getWorkingGrid(l, w, array) {
+
+  let arr = array;
+  let tGrid = setGrid(l, w);
+
+  for (let i = 0; i < l; i++) {
+    for (let j = 0; j < w; j++) {
+
+      tGrid[i][j].bomb = false;
+      tGrid[i][j].visible = false;
+
+    }
+  }
+
+
+  for (let i = 0; i < arr.length; i++) {
+   
+   let wLand = tGrid[arr[i][0]][arr[i][1]];
+
+   if ((typeof arr[i][2]) == 'number'){
+     wLand.number = arr[i][2];
+   } else if (arr[i][2] == 'b'){
+     wLand.bomb = true;
+   } else if (arr[i][2] == 'f'){
+     wLand.flag = true;
+   } else {
+     console.log("fuck - working grid wLand error");
+   }
+
+  if (arr[i][3] == 'v'){
+    wLand.setVisible = true;
+  }
+
+
+
+  }
+
+  updateAll(tGrid);
+  return tGrid;
+}
+
+
+//
+let array31 = [
+  [0,0,'b','i'],
+  [1,0,'b','i'],
+  [0,1,3,'v'],
+  [0,2,1,'v']
+];
 
 
 //main
 
-
 //playGrid = setGrid(pGridx, pGridy);
 firstGuessSetup(Math.floor(pGridx / 2), Math.floor(pGridy / 2));
+//playGrid = getWorkingGrid(2, 1, array31);
+
 
 updateAll(playGrid);
-
-budgetTrueVisualizer(playGrid);
-console.log();
 budgetVisualizer(playGrid);
 console.log();
-console.log(getOpenSet(playGrid).length);
 scrape(playGrid);
+budgetTrueVisualizer(playGrid);
+console.log("Solution: " + solved(playGrid));
+
 
 //scrape(playGrid);
 //budgetVisualizer(playGrid);
@@ -488,4 +596,3 @@ scrape(playGrid);
 //getNeighbours(playGrid[0][0]);
 //console.log(playGrid[1][1].neighbours)
 //playGrid[1][1].setVisible();
-
